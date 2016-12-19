@@ -147,11 +147,18 @@ class UserInfoForm extends React.Component {
         var result = currValue.match( /\d+/i );
         var error = currValue.match( /\D+/i );
         if (error){
-            this.setState({error: 'Введено не числовое значение'});
+          var state = Object.assign(this.state, {
+            something: Object.assign(this.state.error, { phone: 'Введено не числовое значение' }),
+          });
+          this.setState(state);
+
         } else {
-          this.setState({error: ''});
+          var state = Object.assign(this.state, {
+            something: Object.assign(this.state.error, { phone: '' }),
+          });
+          this.setState(state);
         }
-        this.setState({phone: result[0]});
+        this.setState({phone: (result ? result[0]: '')});
         break;
       default:
         break;
