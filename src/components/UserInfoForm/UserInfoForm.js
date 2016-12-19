@@ -65,7 +65,7 @@ class UserInfoForm extends React.Component {
     }
 
     let selectedUser = nextProps.selectedUser;
-    if (selectedUser){
+    if (Object.keys(selectedUser).length){
         this.setState({id: selectedUser.id});
       if (getBirthDate(selectedUser.birthdate).length > 0){
         const date = getBirthDate(selectedUser.birthdate);
