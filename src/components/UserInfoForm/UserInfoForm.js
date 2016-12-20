@@ -50,7 +50,8 @@ class UserInfoForm extends React.Component {
         phone:'',
         error:{
           phone:'',
-          fio:''
+          fio:'',
+          birth:''
         }
       }
 	}
@@ -84,7 +85,7 @@ class UserInfoForm extends React.Component {
     }
   }
 
-  componentWillUpdate(){
+  componentDidUpdate(){
     let user = {fio:'',
       birthDate: '',
       contacts:{
@@ -100,6 +101,7 @@ class UserInfoForm extends React.Component {
     user.contacts.phone = this.state.phone;
     dsApi.addNewTaskToLStorage(user);
   }
+
 
   componentDidMount () {
       let lsUser = dsApi.getTasksFromLStorage();
@@ -218,16 +220,24 @@ class UserInfoForm extends React.Component {
     user.contacts.city = this.state.city || '';
     user.contacts.phone = this.state.phone || '';
 
-if (!checks.phone(user.contacts.phone) || !checks.fio(user.fio)){
+
+
+if (!checks.phone(user.contacts.phone) || !checks.fio(user.fio) || !checks.dbate(user.birthDate)){
+  if (!this.state.birthDateDay || !this.state.birthDateMonth || !this.state.birthDateYear){
+    var state = Object.assign(this.state, {
+      something: Object.assign(this.state.error, { birth: 'дата рождения некорректна' }),
+    });
+    this.setState(state);
+  }
   if (!checks.phone(user.contacts.phone)){
     var state = Object.assign(this.state, {
-      something: Object.assign(this.state.error, { phone: 'Введен некорректный номер' }),
+      something: Object.assign(this.state.error, { phone: 'некорректный номер' }),
     });
     this.setState(state);
   }
   if (!checks.fio(user.fio)){
     var state = Object.assign(this.state, {
-      something: Object.assign(this.state.error, { fio: 'ФИО введено некорректно' }),
+      something: Object.assign(this.state.error, { fio: 'фио некорректно' }),
     });
     this.setState(state);
   }
@@ -269,6 +279,10 @@ if (!checks.phone(user.contacts.phone) || !checks.fio(user.fio)){
         this.props.handleUsersUpdate();
       })
     }
+    var state = Object.assign(this.state, {
+      something: Object.assign(this.state.error, { fio: '', phone: '', birth: '' }),
+    });
+    this.setState(state);
   }
 }
 
@@ -276,10 +290,12 @@ if (!checks.phone(user.contacts.phone) || !checks.fio(user.fio)){
     const styleDate = {
       width: 450,
       margin: 10,
-      padding: 10,
+      padding: 15,
       textAlign: 'left',
       display: 'flex',
     };
+
+
 
     const styleFio = {
       height: 100,
@@ -351,10 +367,11 @@ if (!checks.phone(user.contacts.phone) || !checks.fio(user.fio)){
                   	onChange={this.handleChange.bind(this)}
                   />
               </Paper >
-                <div className={s.datagroup}>
-                <Paper style={styleDate} zDepth={1} >
+                <div className={s.datagroup} >
+                <Paper style={styleDate } zDepth={1} >
                   <SelectField className={s.selectfield__day} id="day"
                     floatingLabelText="День"
+                    errorText = {this.state.error.birth.length > 0 ? ' ': ''}
                     value={parseInt(this.state.birthDateDay)}
                     onChange={this.handleSelectDay.bind(this)}
                   >
@@ -362,6 +379,7 @@ if (!checks.phone(user.contacts.phone) || !checks.fio(user.fio)){
                   </SelectField>
                   <SelectField className={s.selectfield__month} id="month"
                     floatingLabelText={"Месяц"}
+                    errorText = {this.state.error.birth}
                     value={parseInt(this.state.birthDateMonth)}
                     onChange={this.handleSelectMonth.bind(this)}
                   >
@@ -369,6 +387,7 @@ if (!checks.phone(user.contacts.phone) || !checks.fio(user.fio)){
                   </SelectField>
                   <SelectField className={s.selectfield__year} id="year"
                     floatingLabelText="Год"
+                    errorText = {this.state.error.birth.length > 0 ? ' ': ''}
                     value={parseInt(this.state.birthDateYear)}
                     onChange={this.handleSelectYear.bind(this)}
                   >
