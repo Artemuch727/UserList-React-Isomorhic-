@@ -29,14 +29,14 @@ import schema from './data/schema';
 import routes from './routes';
 import assets from './assets'; // eslint-disable-line import/no-unresolved
 import { port, auth, databaseUrl } from './config';
-
+import injectTapEventPlugin from 'react-tap-event-plugin';
 import sqlite3 from 'sqlite3';
 let db = new sqlite3.Database(databaseUrl);
 
 
 
 const app = express();
-
+injectTapEventPlugin();
 //
 // Tell any CSS tooling (such as Material UI) to use all vendor prefixes if the
 // user agent is not known.
