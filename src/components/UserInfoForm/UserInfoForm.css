@@ -1,0 +1,85 @@
+/**
+ * React Starter Kit (https://www.reactstarterkit.com/)
+ *
+ * Copyright © 2014-2016 Kriasoft, LLC. All rights reserved.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE.txt file in the root directory of this source tree.
+ */
+
+@import '../variables.css';
+
+.root {
+  background: #fff;
+  color: #fff;
+}
+
+.container {
+  margin: 0 auto;
+  padding: 20px 10px;
+  max-width: var(--max-content-width);
+  text-align: left;
+}
+
+.datagroup {
+  width: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  margin-left: 10px;
+}
+
+.selectfield {
+  margin-right: 30px;
+}
+
+
+
+.textfield__phone {
+  float: left;
+}
+
+.selectfield__day {
+  margin: 0 10px;
+  width: 50px !important;
+}
+
+.selectfield__month {
+  margin: 0 10px;
+  width: 165px !important;
+}
+
+.selectfield__year {
+  margin: 0 10px;
+  width: 90px !important;
+}
+
+.text {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.textMuted {
+  composes: text;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.spacer {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.text,
+.link {
+  padding: 2px 5px;
+  font-size: 1em;
+}
+
+.link,
+.link:active,
+.link:visited {
+  color: rgba(255, 255, 255, 0.6);
+  text-decoration: none;
+}
+
+.link:hover {
+  color: rgba(255, 255, 255, 1);
+}
