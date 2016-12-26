@@ -5,7 +5,11 @@ const checks = {
 		}
 		return false;
 	},
+<<<<<<< HEAD
 	dbate: (dbate) => {
+=======
+  	dbate: (dbate) => {
+>>>>>>> origin/master
 		if (dbate != undefined){
 				let dt = dbate.split('.');
 				if (!dt[0] || !dt[1] || !dt[2] ){

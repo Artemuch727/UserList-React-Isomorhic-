@@ -60,6 +60,7 @@ class UserInfoForm extends React.Component {
 
   componentWillReceiveProps(nextProps){
     let selectedUser = nextProps.selectedUser;
+<<<<<<< HEAD
     if (selectedUser != null){
         this.setState({...this.state,
           user:{
@@ -72,6 +73,23 @@ class UserInfoForm extends React.Component {
               phone:selectedUser.phone || ''
             }
           }
+=======
+    if (Object.keys(selectedUser).length){
+        this.setState({id: selectedUser.id});
+      if (getBirthDate(selectedUser.birthdate).length > 0){
+        const date = getBirthDate(selectedUser.birthdate);
+          this.setState({
+            birthDateDay: date[0],
+            birthDateMonth: date[1],
+            birthDateYear: date[2]
+          })
+      };
+        this.setState({
+          fio: selectedUser.fio || '',
+          address: selectedUser.address || '',
+          city:selectedUser.city || '',
+          phone:selectedUser.phone || ''
+>>>>>>> origin/master
         })
     }
     else {
@@ -88,6 +106,7 @@ class UserInfoForm extends React.Component {
   }
 
   componentDidUpdate(){
+<<<<<<< HEAD
     if (this.state.user.fio){
         let user = this.state.user;
         api.addNewTaskToLStorage(user);
@@ -108,6 +127,39 @@ class UserInfoForm extends React.Component {
         }
 
     }
+=======
+    let user = {fio:'',
+      birthDate: '',
+      contacts:{
+        address: '',
+        city: '',
+        phone: ''
+      }};
+
+    user.fio = this.state.fio;
+    user.birthDate = this.state.birthDateDay + '.' +  this.state.birthDateMonth  + '.' +  this.state.birthDateYear;
+    user.contacts.address = this.state.address;
+    user.contacts.city = this.state.city;
+    user.contacts.phone = this.state.phone;
+    dsApi.addNewTaskToLStorage(user);
+  }
+
+
+  componentDidMount () {
+      let lsUser = dsApi.getTasksFromLStorage();
+      if (Object.keys(lsUser).length > 0) {
+        let date = lsUser.birthDate.split('.');
+        this.setState({
+          fio: lsUser.fio,
+          birthDateDay: date[0],
+          birthDateMonth: date[1],
+          birthDateYear: date[2],
+          address: lsUser.contacts.address,
+          city:lsUser.contacts.city,
+          phone:lsUser.contacts.phone
+        })
+      }
+>>>>>>> origin/master
   }
 
   handleSelectDay (event, index, value) {
@@ -163,17 +215,29 @@ class UserInfoForm extends React.Component {
         var error = currValue.match( /\D+/i );
         if (error){
           var state = Object.assign(this.state, {
+<<<<<<< HEAD
             error: Object.assign(this.state.error, { phone: 'Введено не числовое значение' }),
+=======
+            something: Object.assign(this.state.error, { phone: 'Введено не числовое значение' }),
+>>>>>>> origin/master
           });
           this.setState(state);
 
         } else {
           var state = Object.assign(this.state, {
+<<<<<<< HEAD
             error: Object.assign(this.state.error, { phone: '' }),
           });
           this.setState(state);
         }
         this.setState({...this.state, user:{...this.state.user, contacts:{...this.state.user.contacts, phone: (result ? result[0]: '')}}});
+=======
+            something: Object.assign(this.state.error, { phone: '' }),
+          });
+          this.setState(state);
+        }
+        this.setState({phone: (result ? result[0]: '')});
+>>>>>>> origin/master
         break;
       default:
         break;
@@ -227,6 +291,7 @@ class UserInfoForm extends React.Component {
     let user = this.state.user;
     const {handleUsersUpdate, handleUserFormShowing } = this.props;
 
+<<<<<<< HEAD
     if (!checks.phone(user.contacts.phone) || !checks.fio(user.fio) || !checks.dbate(user.birthDate)){
       if (!this.state.birthDate){
         this.setState({error:{...this.state.error, birth:'Дата рождения неверна!'}});
@@ -283,16 +348,88 @@ class UserInfoForm extends React.Component {
         }
         this.setState({error:{...this.state.error, fio:'', phone:'', birth:''}});
       }
+=======
+
+
+if (!checks.phone(user.contacts.phone) || !checks.fio(user.fio) || !checks.dbate(user.birthDate)){
+  if (!this.state.birthDateDay || !this.state.birthDateMonth || !this.state.birthDateYear){
+    var state = Object.assign(this.state, {
+      something: Object.assign(this.state.error, { birth: 'дата рождения некорректна' }),
+    });
+    this.setState(state);
+  }
+  if (!checks.phone(user.contacts.phone)){
+    var state = Object.assign(this.state, {
+      something: Object.assign(this.state.error, { phone: 'некорректный номер' }),
+    });
+    this.setState(state);
+  }
+  if (!checks.fio(user.fio)){
+    var state = Object.assign(this.state, {
+      something: Object.assign(this.state.error, { fio: 'фио некорректно' }),
+    });
+    this.setState(state);
+  }
+} else {
+  if (Object.keys(this.props.selectedUser).length == 0){
+    let task = new Promise((resolve, refect)=>{
+        resolve( dsApi.addUserIntoDB(user) );
+      }).then(()=>{
+        this.props.handleUserFormShowing();
+        dsApi.deleteTaskFromLStorage();
+        this.setState({
+          id: '',
+          fio:'',
+          birthDateDay: '',
+          birthDateMonth: '',
+          birthDateYear: '',
+          address: '',
+          city:'',
+          phone:''
+        });
+      }).then(()=>{
+        this.props.handleUsersUpdate();
+      })
+  } else {
+      let task = new Promise((resolve, refect)=>{
+        resolve( dsApi.editSelectedUserFromDB(this.state.id, user) );
+      }).then(()=>{
+        this.props.handleUserFormShowing();
+        dsApi.deleteTaskFromLStorage();
+        this.setState({
+          id: '',
+          fio:'',
+          birthDateDay: '',      birthDateMonth: '',      birthDateYear: '',
+          address: '',
+          city:'',
+          phone:''
+        });
+      }).then(()=>{
+        this.props.handleUsersUpdate();
+      })
+    }
+    var state = Object.assign(this.state, {
+      something: Object.assign(this.state.error, { fio: '', phone: '', birth: '' }),
+    });
+    this.setState(state);
+  }
+>>>>>>> origin/master
 }
 
   render() {
     const styleDate = {
       width: 450,
+<<<<<<< HEAD
       marginLeft: 15,
+=======
+      margin: 10,
+>>>>>>> origin/master
       padding: 15,
       textAlign: 'left',
       display: 'flex',
     };
+
+
 
     const styleFio = {
       height: 100,
@@ -373,7 +510,11 @@ class UserInfoForm extends React.Component {
                   <SelectField className={s.selectfield__day} id="day"
                     floatingLabelText="День"
                     errorText = {this.state.error.birth.length > 0 ? ' ': ''}
+<<<<<<< HEAD
                     value={parseInt((birthDate ? birthDate[0]: ''))}
+=======
+                    value={parseInt(this.state.birthDateDay)}
+>>>>>>> origin/master
                     onChange={this.handleSelectDay.bind(this)}
                   >
                       {daysItems}
@@ -381,7 +522,11 @@ class UserInfoForm extends React.Component {
                   <SelectField className={s.selectfield__month} id="month"
                     floatingLabelText={"Месяц"}
                     errorText = {this.state.error.birth}
+<<<<<<< HEAD
                     value={parseInt((birthDate ? birthDate[1]: ''))}
+=======
+                    value={parseInt(this.state.birthDateMonth)}
+>>>>>>> origin/master
                     onChange={this.handleSelectMonth.bind(this)}
                   >
                       {monthItems}
@@ -389,7 +534,11 @@ class UserInfoForm extends React.Component {
                   <SelectField className={s.selectfield__year} id="year"
                     floatingLabelText="Год"
                     errorText = {this.state.error.birth.length > 0 ? ' ': ''}
+<<<<<<< HEAD
                     value={parseInt((birthDate ? birthDate[2]: ''))}
+=======
+                    value={parseInt(this.state.birthDateYear)}
+>>>>>>> origin/master
                     onChange={this.handleSelectYear.bind(this)}
                   >
                     {yearItems}

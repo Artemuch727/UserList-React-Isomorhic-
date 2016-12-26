@@ -25,17 +25,20 @@ import routes from './routes';
 import assets from './assets'; // eslint-disable-line import/no-unresolved
 import { port, auth, databaseUrl } from './config';
 import injectTapEventPlugin from 'react-tap-event-plugin';
+<<<<<<< HEAD
 // Needed for onTouchTap
 // http://stackoverflow.com/a/34015469/988941
 injectTapEventPlugin();
 
+=======
+>>>>>>> origin/master
 import sqlite3 from 'sqlite3';
 let db = new sqlite3.Database(databaseUrl);
 
 
 
 const app = express();
-
+injectTapEventPlugin();
 //
 // Tell any CSS tooling (such as Material UI) to use all vendor prefixes if the
 // user agent is not known.
