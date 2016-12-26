@@ -30,6 +30,10 @@
   color: rgba(255, 255, 255, 0.3);
 }
 
+.title {
+  color: #333;
+}
+
 .spacer {
   color: rgba(255, 255, 255, 0.3);
 }

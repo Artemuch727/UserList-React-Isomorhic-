@@ -6,7 +6,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE.txt file in the root directory of this source tree.
  */
-//import React from 'react';
+
 import {List, ListItem} from 'material-ui/List';
 import ActionGrade from 'material-ui/svg-icons/action/grade';
 import Divider from 'material-ui/Divider';
@@ -17,25 +17,16 @@ import React, { PropTypes } from 'react';
 import withStyles from 'isomorphic-style-loader/lib/withStyles';
 import s from './Users.css';
 
-// app.get('/users', async (req, res, next) => {
-//   db.all("SELECT * FROM User", function(err, rows) {
-//     if (err){ next(err) }
-//     res.send(rows);
-//   });
-// })
-
 class Users extends React.Component {
   static propTypes = {
     title: PropTypes.string.isRequired,
   };
 
   render() {
-    console.log(   'non res');
     return (
       <div className={s.root}>
         <div className={s.container}>
-          <h1>{this.props.title}</h1>
-
+          <h1 className={s.title}>{this.props.title}</h1>
         </div>
       </div>
     );

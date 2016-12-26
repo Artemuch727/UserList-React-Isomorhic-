@@ -29,7 +29,6 @@ injectTapEventPlugin();
 const context = {
   // Enables critical path CSS rendering
   // https://github.com/kriasoft/isomorphic-style-loader
-  resp: () => { res },
   insertCss: (...styles) => {
     // eslint-disable-next-line no-underscore-dangle
     const removeCss = styles.map(x => x._insertCss());

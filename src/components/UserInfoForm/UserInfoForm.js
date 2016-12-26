@@ -24,7 +24,8 @@ import FlatButton from 'material-ui/FlatButton';
 import SelectField from 'material-ui/SelectField';
 import MenuItem from 'material-ui/MenuItem';
 import TextField from 'material-ui/TextField';
-import dsApi from '../API';
+
+import api from '../../core/api';
 import withStyles from 'isomorphic-style-loader/lib/withStyles';
 import s from './UserInfoForm.css';
 import Link from '../Link';
@@ -40,93 +41,107 @@ class UserInfoForm extends React.Component {
   constructor(props) {
 		super(props);
 		this.state  = {
-        id: '',
-        fio:'',
-        birthDateDay: 0,
-        birthDateMonth: 0,
-        birthDateYear: 0,
-        address: '',
-        city:'',
-        phone:'',
+        user: {
+          fio:'',
+          birthDate: '',
+          contacts:{
+            address: '',
+            city: '',
+            phone: ''
+          }
+        },
         error:{
           phone:'',
-          fio:''
+          fio:'',
+          birth:''
         }
       }
 	}
 
   componentWillReceiveProps(nextProps){
-    const getBirthDate = (bdate) => {
-      let result = [];
-      if(bdate != undefined){
-        result = bdate.split('.');
-      }
-      return result;
-    }
-
     let selectedUser = nextProps.selectedUser;
-    if (selectedUser){
-        this.setState({id: selectedUser.id});
-      if (getBirthDate(selectedUser.birthdate).length > 0){
-        const date = getBirthDate(selectedUser.birthdate);
-          this.setState({
-            birthDateDay: date[0],
-            birthDateMonth: date[1],
-            birthDateYear: date[2]
-          })
-      };
-        this.setState({
-          fio: selectedUser.fio || '',
-          address: selectedUser.address || '',
-          city:selectedUser.city || '',
-          phone:selectedUser.phone || ''
+    if (selectedUser != null){
+        this.setState({...this.state,
+          user:{
+            id: selectedUser.id || '',
+            birthDate: selectedUser.birthdate || '',
+            fio: selectedUser.fio || '',
+            contacts:{
+              address: selectedUser.address || '',
+              city:selectedUser.city || '',
+              phone:selectedUser.phone || ''
+            }
+          }
         })
+    }
+    else {
+      this.setState({...this.state,    user: {
+            fio:'',
+            birthDate: '',
+            contacts:{
+              address: '',
+              city: '',
+              phone: ''
+            }
+          }});
     }
   }
 
-  componentWillUpdate(){
-    let user = {fio:'',
-      birthDate: '',
-      contacts:{
-        address: '',
-        city: '',
-        phone: ''
-      }};
+  componentDidUpdate(){
+    if (this.state.user.fio){
+        let user = this.state.user;
+        api.addNewTaskToLStorage(user);
+      } else {
+        let lsUser = api.getTasksFromLStorage();
+        if (lsUser!=null) {
+          this.setState({...this.state,
+            user:{
+              birthDate: lsUser.birthDate || '',
+              fio: lsUser.fio || '',
+              contacts:{
+                address: lsUser.contacts.address || '',
+                city:lsUser.contacts.city || '',
+                phone:lsUser.contacts.phone || ''
+              }
+            }
+          })
+        }
 
-    user.fio = this.state.fio;
-    user.birthDate = this.state.birthDateDay + '.' +  this.state.birthDateMonth  + '.' +  this.state.birthDateYear;
-    user.contacts.address = this.state.address;
-    user.contacts.city = this.state.city;
-    user.contacts.phone = this.state.phone;
-    dsApi.addNewTaskToLStorage(user);
-  }
-
-  componentDidMount () {
-      let lsUser = dsApi.getTasksFromLStorage();
-      if (Object.keys(lsUser).length > 0) {
-        let date = lsUser.birthDate.split('.');
-        this.setState({
-          fio: lsUser.fio,
-          birthDateDay: date[0],
-          birthDateMonth: date[1],
-          birthDateYear: date[2],
-          address: lsUser.contacts.address,
-          city:lsUser.contacts.city,
-          phone:lsUser.contacts.phone
-        })
-      }
+    }
   }
 
   handleSelectDay (event, index, value) {
-    this.setState({birthDateDay: value});
+    let bdate = [],
+      birthDate = '';
+    if(this.state.user.birthDate){
+      bdate = this.state.user.birthDate.split('.');
+    }
+    bdate[0] = value;
+    birthDate = bdate.join('.');
+
+    this.setState({...this.state, user: {...this.state.user, birthDate: birthDate}});
   }
 
   handleSelectMonth (event, index, value) {
-    this.setState({birthDateMonth: value});
+    let bdate = [],
+      birthDate = '';
+    if(this.state.user.birthDate){
+      bdate = this.state.user.birthDate.split('.');
+    }
+    bdate[1] = value;
+    birthDate = bdate.join('.');
+    this.setState({...this.state, user: {...this.state.user, birthDate: birthDate}});
   }
 
   handleSelectYear (event, index, value) {
-    this.setState({birthDateYear: value});
+    let bdate = [],
+      birthDate = '';
+    if(this.state.user.birthDate){
+      bdate = this.state.user.birthDate.split('.');
+    }
+    bdate[2] = value;
+    birthDate = bdate.join('.');
+    this.setState({...this.state, user: {...this.state.user, birthDate: birthDate}});
   }
 
 	handleChange (event) {
@@ -135,23 +150,30 @@ class UserInfoForm extends React.Component {
 
     switch (currFiled) {
       case 'fio':
-        this.setState({fio: currValue});
+        this.setState({...this.state, user: {...this.state.user, fio: currValue}});
         break;
       case 'city':
-        this.setState({city: currValue});
+        this.setState({...this.state, user:{...this.state.user, contacts: {...this.state.user.contacts, city: currValue}}});
         break;
       case 'address':
-        this.setState({address: currValue});
+        this.setState({...this.state, user:{...this.state.user, contacts:{...this.state.user.contacts, address: currValue}}});
         break;
       case 'phone':
         var result = currValue.match( /\d+/i );
         var error = currValue.match( /\D+/i );
         if (error){
-            this.setState({error: 'Введено не числовое значение'});
+          var state = Object.assign(this.state, {
+            error: Object.assign(this.state.error, { phone: 'Введено не числовое значение' }),
+          });
+          this.setState(state);
+
         } else {
-          this.setState({error: ''});
+          var state = Object.assign(this.state, {
+            error: Object.assign(this.state.error, { phone: '' }),
+          });
+          this.setState(state);
         }
-        this.setState({phone: result[0]});
+        this.setState({...this.state, user:{...this.state.user, contacts:{...this.state.user.contacts, phone: (result ? result[0]: '')}}});
         break;
       default:
         break;
@@ -160,116 +182,114 @@ class UserInfoForm extends React.Component {
 	}
 
   handleCancel (event) {
-
-    this.props.handleUserFormShowing();
-    dsApi.deleteTaskFromLStorage();
-    this.setState({
-      fio:'',
-      birthDateDay: '',
-      birthDateMonth: '',
-      birthDateYear: '',
-      address: '',
-      city:'',
-      phone:''
+    const {handleUsersUpdate, handleUserFormShowing } = this.props;
+    api.deleteTaskFromLStorage();
+    handleUserFormShowing();
+    handleUsersUpdate();
+    this.setState({...this.state,
+      user:{
+        id:  '',
+        birthDate:  '',
+        fio:  '',
+        contacts:{
+          address:  '',
+          city: '',
+          phone: ''
+        }
+      }
     });
-    this.props.handleUsersUpdate();
   }
 
   handleDelete (event) {
-
-   let task = new Promise((resolve, refect)=>{
-     resolve(dsApi.deleteUserFromDB(this.state.id));
+   let task = new Promise((resolve, reject)=>{
+     resolve(api.deleteUserFromDB(this.state.user.id));
    }).then(()=>{
+     api.deleteTaskFromLStorage();
      this.props.handleUserFormShowing();
-     dsApi.deleteTaskFromLStorage();
-     this.setState({
-       id: '',
-       fio:'',
-       birthDateDay: '',      birthDateMonth: '',      birthDateYear: '',
-       address: '',
-       city:'',
-       phone:''
-     });
+     this.setState({...this.state,
+       user:{
+         id:  '',
+         birthDate:  '',
+         fio:  '',
+         contacts:{
+           address:  '',
+           city: '',
+           phone: ''
+         }
+       }
+     })
    }).then(()=>{
      this.props.handleUsersUpdate();
    })
   }
 
   handleSubmit (event) {
-    let months = ["январь","февраль","март","апрель","май","июнь","июль","август","сентябрь","октябрь","ноябрь","декабрь"];
-    let user = {fio:'',
-      birthDate: '',
-      contacts:{
-        address: '',
-        city: '',
-        phone: ''
-      }};
+    let user = this.state.user;
+    const {handleUsersUpdate, handleUserFormShowing } = this.props;
 
-    user.fio = this.state.fio;
-    user.birthDate = this.state.birthDateDay + '.' +  this.state.birthDateMonth  + '.' +  this.state.birthDateYear;
-    user.contacts.address = this.state.address || '';
-    user.contacts.city = this.state.city || '';
-    user.contacts.phone = this.state.phone || '';
-
-if (!checks.phone(user.contacts.phone) || !checks.fio(user.fio)){
-  if (!checks.phone(user.contacts.phone)){
-    var state = Object.assign(this.state, {
-      something: Object.assign(this.state.error, { phone: 'Введен некорректный номер' }),
-    });
-    this.setState(state);
-  }
-  if (!checks.fio(user.fio)){
-    var state = Object.assign(this.state, {
-      something: Object.assign(this.state.error, { fio: 'ФИО введено некорректно' }),
-    });
-    this.setState(state);
-  }
-} else {
-  if (Object.keys(this.props.selectedUser).length == 0){
-    let task = new Promise((resolve, refect)=>{
-        resolve( dsApi.addUserIntoDB(user) );
-      }).then(()=>{
-        this.props.handleUserFormShowing();
-        dsApi.deleteTaskFromLStorage();
-        this.setState({
-          id: '',
-          fio:'',
-          birthDateDay: '',
-          birthDateMonth: '',
-          birthDateYear: '',
-          address: '',
-          city:'',
-          phone:''
-        });
-      }).then(()=>{
-        this.props.handleUsersUpdate();
-      })
-  } else {
-      let task = new Promise((resolve, refect)=>{
-        resolve( dsApi.editSelectedUserFromDB(this.state.id, user) );
-      }).then(()=>{
-        this.props.handleUserFormShowing();
-        dsApi.deleteTaskFromLStorage();
-        this.setState({
-          id: '',
-          fio:'',
-          birthDateDay: '',      birthDateMonth: '',      birthDateYear: '',
-          address: '',
-          city:'',
-          phone:''
-        });
-      }).then(()=>{
-        this.props.handleUsersUpdate();
-      })
-    }
-  }
+    if (!checks.phone(user.contacts.phone) || !checks.fio(user.fio) || !checks.dbate(user.birthDate)){
+      if (!this.state.birthDate){
+        this.setState({error:{...this.state.error, birth:'Дата рождения неверна!'}});
+      }
+      if (!checks.phone(user.contacts.phone)){
+          this.setState({error:{...this.state.error, phone:'Номер телефона некорректен!'}});
+      }
+      if (!checks.fio(user.fio)){
+          this.setState({error:{...this.state.error, fio:'ФИО некорректно!'}});
+      }
+    } else {
+      if (this.props.selectedUser == null){
+        let task = new Promise((resolve, reject)=>{
+            resolve( api.addUserIntoDB(user) );
+          }).then(()=>{
+            handleUserFormShowing();
+            api.deleteTaskFromLStorage();
+            this.setState({...this.state,
+              user:{
+                id:  '',
+                birthDate:  '',
+                fio:  '',
+                contacts:{
+                  address:  '',
+                  city: '',
+                  phone: ''
+                }
+              }
+            });
+          }).then(()=>{
+            handleUsersUpdate();
+          })
+      } else {
+          let task = new Promise((resolve, reject)=>{
+            resolve( api.editSelectedUserFromDB(this.state.user.id, user) );
+            }).then(()=>{
+            handleUserFormShowing();
+            api.deleteTaskFromLStorage();
+            this.setState({...this.state,
+              user:{
+                id:  '',
+                birthDate:  '',
+                fio:  '',
+                contacts:{
+                  address:  '',
+                  city: '',
+                  phone: ''
+                }
+              }
+            });
+          }).then(()=>{
+            handleUsersUpdate();
+          })
+        }
+        this.setState({error:{...this.state.error, fio:'', phone:'', birth:''}});
+      }
 }
 
   render() {
     const styleDate = {
       width: 450,
-      margin: 10,
-      padding: 10,
+      marginLeft: 15,
+      padding: 15,
       textAlign: 'left',
       display: 'flex',
     };
@@ -295,7 +315,7 @@ if (!checks.phone(user.contacts.phone) || !checks.fio(user.fio)){
     let months = ["январь","февраль","март","апрель","май","июнь","июль","август","сентябрь","октябрь","ноябрь","декабрь"];
     let days = [];
     let years = [];
-    for (let i=1900; i <=2016; i++) {
+    for (let i=1945; i <=2016; i++) {
       years.push(i);
     }
     for (let i = 1; i <= 31; i++){
@@ -312,6 +332,10 @@ if (!checks.phone(user.contacts.phone) || !checks.fio(user.fio)){
     let yearItems = years.map((year, index)=>
       <MenuItem key={year} value={year} primaryText={year} />
     );
+
+    if (this.state.user.birthDate){
+      var birthDate = this.state.user.birthDate.split('.');
+    }
 
 
     return (
@@ -335,7 +359,7 @@ if (!checks.phone(user.contacts.phone) || !checks.fio(user.fio)){
             <Paper style={styleFio} zDepth={1} >
                   <TextField
                     id="fio"
-                    value = {this.state.fio}
+                    value = {this.state.user.fio}
                   	hintText="Введите ФИО..."
                   	floatingLabelText="Ф.И.О."
                     fullWidth={true}
@@ -344,25 +368,28 @@ if (!checks.phone(user.contacts.phone) || !checks.fio(user.fio)){
                   	onChange={this.handleChange.bind(this)}
                   />
               </Paper >
-                <div className={s.datagroup}>
-                <Paper style={styleDate} zDepth={1} >
+                <div className={s.datagroup} >
+                <Paper style={styleDate } zDepth={1} >
                   <SelectField className={s.selectfield__day} id="day"
                     floatingLabelText="День"
-                    value={parseInt(this.state.birthDateDay)}
+                    errorText = {this.state.error.birth.length > 0 ? ' ': ''}
+                    value={parseInt((birthDate ? birthDate[0]: ''))}
                     onChange={this.handleSelectDay.bind(this)}
                   >
                       {daysItems}
                   </SelectField>
                   <SelectField className={s.selectfield__month} id="month"
                     floatingLabelText={"Месяц"}
-                    value={parseInt(this.state.birthDateMonth)}
+                    errorText = {this.state.error.birth}
+                    value={parseInt((birthDate ? birthDate[1]: ''))}
                     onChange={this.handleSelectMonth.bind(this)}
                   >
                       {monthItems}
                   </SelectField>
                   <SelectField className={s.selectfield__year} id="year"
                     floatingLabelText="Год"
-                    value={parseInt(this.state.birthDateYear)}
+                    errorText = {this.state.error.birth.length > 0 ? ' ': ''}
+                    value={parseInt((birthDate ? birthDate[2]: ''))}
                     onChange={this.handleSelectYear.bind(this)}
                   >
                     {yearItems}
@@ -373,7 +400,7 @@ if (!checks.phone(user.contacts.phone) || !checks.fio(user.fio)){
                 <Paper style={styleContacts} zDepth={1} >
                   <TextField
                     id="address"
-                    value = {this.state.address}
+                    value = {(this.state.user.contacts ? this.state.user.contacts.address : '')}
                     hintText="Введите Адрес..."
                     floatingLabelText="Адрес"
                     fullWidth={true}
@@ -382,7 +409,7 @@ if (!checks.phone(user.contacts.phone) || !checks.fio(user.fio)){
                   />
                   <TextField
                     id="city"
-                    value = {this.state.city}
+                    value = {(this.state.user.contacts ? this.state.user.contacts.city : '')}
                     hintText="Введите Город..."
                     floatingLabelText="Город"
                     fullWidth={true}
@@ -391,7 +418,7 @@ if (!checks.phone(user.contacts.phone) || !checks.fio(user.fio)){
                   />
                   <TextField
                     id="phone"
-                    value = {this.state.phone}
+                    value = {(this.state.user.contacts ? this.state.user.contacts.phone : '')}
                     hintText="79991234567"
                     floatingLabelText="Телефон"
                     className={s.textfield__phone}

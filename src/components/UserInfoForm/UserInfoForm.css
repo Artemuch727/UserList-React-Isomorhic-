@@ -26,13 +26,14 @@
   display: flex;
   align-items: center;
   justify-content: space-around;
+  margin-left: 10px;
 }
 
 .selectfield {
   margin-right: 30px;
 }
 
- 
+
 
 .textfield__phone {
   float: left;
@@ -45,7 +46,7 @@
 
 .selectfield__month {
   margin: 0 10px;
-  width: 120px !important;
+  width: 165px !important;
 }
 
 .selectfield__year {

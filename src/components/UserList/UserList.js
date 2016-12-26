@@ -18,44 +18,65 @@ import React from 'react';
 import withStyles from 'isomorphic-style-loader/lib/withStyles';
 import s from './UserList.css';
 import Link from '../Link';
-import dsApi from '../API';
+import api from '../../core/api';
 
 class UserList extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       open: false,
-      selected: {},
+      selected: null,
       users: [],
     };
   }
 
   componentDidMount() {
-      let users = dsApi.getAllUsersFromDB().then((response)=>{
+      let users = api.getAllUsersFromDB().then((response)=>{
         this.setState({users: response.data});
         console.log(response.data);
       });
   }
 
-  handleListItemSelect(event) {
 
-    if (event.target.id != this.state.selected.id){
+  handleListItemSelect(event) {
+    if (this.state.selected != null){
+      if (event.target.id != this.state.selected.id){
+        this.setState({open: true })
+        api.getSelectedUserFromDB(event.target.id).then((response)=>{
+        this.setState({selected: response.data[0]});
+        });
+      }else {
+        api.deleteTaskFromLStorage();
+        this.setState({open: false, selected: null})
+      }
+    }else {
       this.setState({open: true })
-      dsApi.getSelectedUserFromDB(event.target.id).then((response)=>{
+      api.getSelectedUserFromDB(event.target.id).then((response)=>{
       this.setState({selected: response.data[0]});
-      });
-    } else {
-      this.setState({open: false, selected: {}})
+    })
     }
   }
 
   handleUserFormShowing(event) {
-    this.setState({open: !this.state.open})
+    if (this.state.open){
+      let lsUser = api.getTasksFromLStorage();
+      if (lsUser == null){
+        this.setState({open: !this.state.open})
+      } else {
+        api.deleteTaskFromLStorage().then(()=>{
+          this.setState({
+              selected: null
+            });
+        });
+      }
+    }else {
+      this.setState({open: !this.state.open})
+    }
   }
 
   handleUsersUpdate(){
-      let users = dsApi.getAllUsersFromDB().then((response)=>{
-        this.setState({users: response.data, selected: {}});
+      let users = api.getAllUsersFromDB().then((response)=>{
+        this.setState({users: response.data, selected: null});
     });
   }
 
@@ -81,7 +102,7 @@ class UserList extends React.Component {
     return (
       <div className={s.root}>
         <div className={s.container}>
-          <h1 className={s.title}>{this.props.title}</h1>
+          <h1 className={s.title}>{"Список пользователей"}</h1>
           <FloatingActionButton
             onTouchTap={this.handleUserFormShowing.bind(this)}
             style={style}>

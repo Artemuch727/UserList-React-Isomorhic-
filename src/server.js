@@ -12,8 +12,6 @@ import path from 'path';
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import bodyParser from 'body-parser';
-import expressJwt from 'express-jwt';
-import expressGraphQL from 'express-graphql';
 import jwt from 'jsonwebtoken';
 import React from 'react';
 import ReactDOM from 'react-dom/server';
@@ -23,12 +21,13 @@ import App from './components/App';
 import Html from './components/Html';
 import { ErrorPageWithoutStyle } from './routes/error/ErrorPage';
 import errorPageStyle from './routes/error/ErrorPage.css';
-import passport from './core/passport';
-import models from './data/models';
-import schema from './data/schema';
 import routes from './routes';
 import assets from './assets'; // eslint-disable-line import/no-unresolved
 import { port, auth, databaseUrl } from './config';
+import injectTapEventPlugin from 'react-tap-event-plugin';
+// Needed for onTouchTap
+// http://stackoverflow.com/a/34015469/988941
+injectTapEventPlugin();
 
 import sqlite3 from 'sqlite3';
 let db = new sqlite3.Database(databaseUrl);
@@ -54,53 +53,16 @@ app.use(bodyParser.json());
 
 
 //db initialisation
-// db.run("DROP TABLE USERS");
 db.run("CREATE TABLE if not exists USERS (id INTEGER PRIMARY KEY, fio VARCHAR(255), birthdate DATETIME, city VARCHAR(255), address VARCHAR(255), phone VARCHAR(15))");
-//
-// Authentication
-// -----------------------------------------------------------------------------
-app.use(expressJwt({
-  secret: auth.jwt.secret,
-  credentialsRequired: false,
-  getToken: req => req.cookies.id_token,
-}));
-app.use(passport.initialize());
 
-  if (process.env.NODE_ENV !== 'production') {
-    app.enable('trust proxy');
-  }
-  app.get('/login/facebook',
-    passport.authenticate('facebook', { scope: ['email', 'user_location'], session: false }),
-  );
-  app.get('/login/facebook/return',
-    passport.authenticate('facebook', { failureRedirect: '/login', session: false }),
-    (req, res) => {
-      const expiresIn = 60 * 60 * 24 * 180; // 180 days
-      const token = jwt.sign(req.user, auth.jwt.secret, { expiresIn });
-      res.cookie('id_token', token, { maxAge: 1000 * expiresIn, httpOnly: true });
-      res.redirect('/');
-    },
-);
-
-//
-// Register API middleware
-// -----------------------------------------------------------------------------
-app.use('/graphql', expressGraphQL(req => ({
-  schema,
-  graphiql: process.env.NODE_ENV !== 'production',
-  rootValue: { request: req },
-  pretty: process.env.NODE_ENV !== 'production',
-})));
-
-
-app.get('/users/all', async (req, res, next) => {
+app.get('/api/users/all', async (req, res, next) => {
   db.all("SELECT * FROM USERS", function(err, rows) {
     if (err){ next(err) }
     res.send(rows);
   });
 })
 
-app.get('/uid', async (req, res, next) => {
+app.get('/api/users/uid', async (req, res, next) => {
   db.all("SELECT id FROM USERS ORDER BY id DESC LIMIT 1", function(err, rows) {
     if (err){ next(err) }
     res.json(rows);
@@ -108,7 +70,7 @@ app.get('/uid', async (req, res, next) => {
 })
 
 
-app.get('/users/:id', async (req, res, next) => {
+app.get('/api/users/:id', async (req, res, next) => {
   let id = req.params.id;
   db.all(`SELECT * FROM USERS WHERE id = "${id}"`, function(err, rows) {
     if (err){
@@ -118,7 +80,7 @@ app.get('/users/:id', async (req, res, next) => {
   });
 })
 
-app.post('/users/:id', async (req, res, next) => {
+app.post('/api/users/:id', async (req, res, next) => {
   console.log('DELETE ' + req.params.id);
   let id = req.params.id;
   db.run(`DELETE FROM USERS WHERE id = "${id}"`, function(err) {
@@ -131,10 +93,9 @@ app.post('/users/:id', async (req, res, next) => {
   });
 })
 
-app.put('/users', async (req, res, next) => {
+app.put('/api/users', async (req, res, next) => {
   console.log('UPDATE USERS');
   let selectedId = req.body.params.id;
-  console.log(selectedId);
   let userData = req.body.params.userData;
   let qeryString = '';
   for (let key in userData) {
@@ -161,9 +122,9 @@ app.put('/users', async (req, res, next) => {
 })
 
 
-app.post('/users', async (req, res, next) => {
-  console.log(req.body);
-  db.run(`INSERT INTO USERS VALUES ("${req.body.id}","${req.body.fio}","${req.body.birthdate}","${req.body.address}","${req.body.city}","${req.body.phone}")`, (err) => {
+app.post('/api/users', async (req, res, next) => {
+  console.log('ins');
+  db.run(`INSERT INTO USERS VALUES ("${req.body.id}","${req.body.fio}","${req.body.birthDate}","${req.body.address}","${req.body.city}","${req.body.phone}")`, (err) => {
     if (err){
       next(err);
     }else {
@@ -185,7 +146,6 @@ app.get('*', async (req, res, next) => {
 
       // Enables critical path CSS rendering
       // https://github.com/kriasoft/isomorphic-style-loader
-      resp: () => { res },
       insertCss: (...styles) => {
         // eslint-disable-next-line no-underscore-dangle
         styles.forEach(style => css.add(style._getCss()));
@@ -247,10 +207,7 @@ app.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
 //
 // Launch the server
 // -----------------------------------------------------------------------------
-/* eslint-disable no-console */
-models.sync().catch(err => console.error(err.stack))
-  .then(() => {
-  app.listen(port, () => {
-    console.log(`The server is running at http://localhost:${port}/`);
-  });
+
+app.listen(port, () => {
+  console.log(`The server is running at http://localhost:${port}/`);
 });

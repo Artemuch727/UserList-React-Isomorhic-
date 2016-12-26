@@ -13,32 +13,10 @@ import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 const ContextType = {
   // Enables critical path CSS rendering
   // https://github.com/kriasoft/isomorphic-style-loader
-  resp: PropTypes.func.isRequired,
   insertCss: PropTypes.func.isRequired,
 };
 
-/**
- * The top-level React component setting context (global) variables
- * that can be accessed from all the child components.
- *
- * https://facebook.github.io/react/docs/context.html
- *
- * Usage example:
- *
- *   const context = {
- *     history: createBrowserHistory(),
- *     store: createStore(),
- *   };
- *
- *   ReactDOM.render(
- *     <App context={context}>
- *       <Layout>
- *         <LandingPage />
- *       </Layout>
- *     </App>,
- *     container,
- *   );
- */
+
 class App extends React.PureComponent {
 
   static propTypes = {
@@ -60,7 +38,6 @@ class App extends React.PureComponent {
           {this.props.children}
         </MuiThemeProvider>);
   }
-
 }
 
 export default App;
